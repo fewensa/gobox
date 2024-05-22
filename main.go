@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"gbox/common"
+	"gbox/common/config"
+	"gbox/runner"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"helix-relayer-runner/common"
-	"helix-relayer-runner/common/config"
-	"helix-relayer-runner/runner"
 
 	"net/http"
 	"os"
@@ -64,7 +64,7 @@ func main() {
 	logrus.SetLevel(logrus.DebugLevel)
 	for {
 		if p.Load() == nil || p.Load().(string) == "" {
-			logrus.Debugf("waiting for password...")
+			logrus.Debugf("waiting for input...")
 			time.Sleep(time.Second)
 			continue
 		}

@@ -4,9 +4,9 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"gbox/common/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"helix-relayer-runner/common/config"
 	"io"
 	"net/http"
 	"os"
@@ -16,22 +16,22 @@ import (
 )
 
 var (
-	shellScriptName = ".helix_relayer.sh"
+	shellScriptName = ".gobox.sh"
 )
 
 type Reload struct {
 	conf             config.Conf
-	password         string
+	input            string
 	cmd              *exec.Cmd
 	shutdownCallback func()
 }
 
-func (r *Reload) Init(conf config.Conf, password string, shutdownCallback func()) error {
+func (r *Reload) Init(conf config.Conf, input string, shutdownCallback func()) error {
 	r.conf = conf
-	r.password = password
+	r.input = input
 	r.shutdownCallback = shutdownCallback
-	if r.password == "" {
-		return errors.New("password is empty")
+	if r.input == "" {
+		return errors.New("input is empty")
 	}
 	if _, err := r.saveRelayerConfig(); err != nil {
 		return errors.Wrap(err, "save relayer config")
@@ -51,7 +51,7 @@ func (r *Reload) IsNeedRestart() (bool, error) {
 // saveRelayerConfig save the new config to the local file, if the new config is different from the old one, return true
 func (r *Reload) saveRelayerConfig() (bool, error) {
 	c := r.conf.Runner
-	helixConf := r.conf.Helix
+	helixConf := r.conf.Program
 	if !r.conf.IsNeedConfigUpdate() {
 		return false, nil
 	}
@@ -81,7 +81,7 @@ func (r *Reload) saveRelayerConfig() (bool, error) {
 }
 
 func (r *Reload) Run(ctx context.Context) (err error) {
-	r.cmd, err = run(ctx, r.conf, r.password, r.shutdownCallback)
+	r.cmd, err = run(ctx, r.conf, r.input, r.shutdownCallback)
 	if err != nil {
 		return errors.Wrap(err, "run helix relayer")
 	}
@@ -96,7 +96,7 @@ func (r *Reload) Shutdown(ctx context.Context) error {
 }
 
 func (r *Reload) Restart(ctx context.Context) (err error) {
-	r.cmd, err = restart(ctx, r.cmd, r.password, r.shutdownCallback)
+	r.cmd, err = restart(ctx, r.cmd, r.input, r.shutdownCallback)
 	return err
 }
 

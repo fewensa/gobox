@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"flag"
 	"fmt"
+	"gbox/common"
 	"github.com/ilyakaznacheev/cleanenv"
-	"helix-relayer-runner/common"
 	"strings"
 	"time"
 )
@@ -19,7 +19,7 @@ type Conf struct {
 		CheckInterval     string `json:"check_interval" yaml:"check_interval" env:"CHECK_INTERVAL" env-default:"1m" help:"check interval,like:1s or 1m or 1h"`
 		ConfigPlaceHolder string `json:"config_place_holder" yaml:"config_place_holder" env:"CONFIG_PLACE_HOLDER" help:"it matches the placeholder and replaces it with the corresponding value, like:{{HELIX_RELAYER_PASSWORD}}=123,{{test}}=456. {{HELIX_RELAYER_PASSWORD}} and {{test}} will be replaced with 123 and 456. if FETCH_CONFIG_URL is not set, the local file will not be replaced."`
 	}
-	Helix struct {
+	Program struct {
 		RootDir    string `json:"root_dir" yaml:"root_dir" env:"HELIX_ROOT_DIR" env-default:"./relayer" help:"helix relayer root directory"`
 		ConfigPath string `json:"config_path" yaml:"config_path" env:"CONFIG_PATH" env-default:"./.maintain/configure.json" help:"config path, HELIX_ROOT_DIR+CONFIG_PATH"`
 		Env        string `json:"env" yaml:"env" env:"HELIX_ENV" env-default:"LP_BRIDGE_PATH=./.maintain/configure.json,LP_BRIDGE_STORE_PATH=./.maintain/db" help:"helix relayer environment variables, like:env1=true,env2=false"`
@@ -31,8 +31,8 @@ func (c Conf) IsNeedConfigUpdate() bool {
 	return c.Runner.FetchConfigUrl != ""
 }
 
-func (c Conf) GetHelixEnv() map[string]string {
-	envs := strings.Split(c.Helix.Env, ",")
+func (c Conf) GetProgramEnv() map[string]string {
+	envs := strings.Split(c.Program.Env, ",")
 	env := make(map[string]string)
 	for _, v := range envs {
 		kv := strings.Split(v, "=")
@@ -45,7 +45,7 @@ func (c Conf) GetHelixEnv() map[string]string {
 }
 
 func (c Conf) GetHelixCommand() (name string, args []string) {
-	command := strings.Split(c.Helix.Command, " ")
+	command := strings.Split(c.Program.Command, " ")
 	name = command[0]
 	args = command[1:]
 	return
@@ -71,13 +71,13 @@ func init() {
 func Help() {
 	c := &Conf{}
 	runnerHelp := common.ExtractTagFromStruct(&c.Runner, "env", "env-default", "help")
-	helixHelp := common.ExtractTagFromStruct(&c.Helix, "env", "env-default", "help")
+	helixHelp := common.ExtractTagFromStruct(&c.Program, "env", "env-default", "help")
 	fmt.Println("Runner Config:")
 	for _, v := range runnerHelp {
 		fmt.Printf("\t%s: %s. default=%s\n", v["env"], v["help"], v["env-default"])
 	}
 
-	fmt.Println("Helix Config:")
+	fmt.Println("Program Config:")
 	for _, v := range helixHelp {
 		fmt.Printf("\t%s: %s. default=%s\n", v["env"], v["help"], v["env-default"])
 	}

@@ -2,9 +2,9 @@ package runner
 
 import (
 	"context"
+	"gbox/common/config"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"helix-relayer-runner/common/config"
 	"net/http"
 	"os"
 	"os/exec"
@@ -48,11 +48,11 @@ func (s *RelayerBuf) String() string {
 }
 
 func run(ctx context.Context, conf config.Conf, password string, waitErrorCallback func()) (*exec.Cmd, error) {
-	err := os.WriteFile(filepath.Join(conf.Helix.RootDir, shellScriptName), []byte(SHELL_SCRIPT), 0755)
+	err := os.WriteFile(filepath.Join(conf.Program.RootDir, shellScriptName), []byte(SHELL_SCRIPT), 0755)
 	if err != nil {
 		return nil, errors.Wrap(err, "write shell script")
 	}
-	subProcess := exec.CommandContext(ctx, filepath.Join(conf.Helix.RootDir, shellScriptName))
+	subProcess := exec.CommandContext(ctx, filepath.Join(conf.Program.RootDir, shellScriptName))
 	subProcess.Stderr = os.Stderr
 	subProcess.Stdin = os.Stdin
 	subProcess.Stdout = &RelayerBuf{
@@ -62,12 +62,12 @@ func run(ctx context.Context, conf config.Conf, password string, waitErrorCallba
 	}
 
 	_ = os.Setenv("HELIX_RELAYER_PASSWORD", password)
-	for k, v := range conf.GetHelixEnv() {
+	for k, v := range conf.GetProgramEnv() {
 		_ = os.Setenv(k, v)
 	}
 
 	subProcess.Env = os.Environ()
-	subProcess.Dir = conf.Helix.RootDir
+	subProcess.Dir = conf.Program.RootDir
 	if err := subProcess.Start(); err != nil {
 		return nil, errors.Wrap(err, "start helix relayer")
 	}
@@ -144,9 +144,9 @@ func restart(ctx context.Context, cmd *exec.Cmd, password string, waitErrorCallb
 	return run(ctx, config.Config(), password, waitErrorCallback)
 }
 
-func Run(ctx context.Context, conf config.Conf, password string, runner Runner) error {
+func Run(ctx context.Context, conf config.Conf, input string, runner Runner) error {
 	var waitErrorCallback = make(chan struct{})
-	if err := runner.Init(conf, password, func() {
+	if err := runner.Init(conf, input, func() {
 		return
 	}); err != nil {
 		return errors.Wrap(err, "init runner")

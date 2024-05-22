@@ -1,4 +1,4 @@
-Helix-Relayer-Runner is a project designed to run the Helix Bridge Relayer (https://github.com/helix-bridge/relayer) in a Docker container. The password is set via HTTP POST, and Helix-Relayer-Runner will start the relayer and automatically input the password. The password is only stored in memory.
+gbox is a project designed to run the Helix Bridge Relayer (https://github.com/helix-bridge/relayer) in a Docker container. The password is set via HTTP POST, and gbox will start the relayer and automatically input the password. The password is only stored in memory.
 
 ## Features:
 
@@ -9,7 +9,7 @@ Helix-Relayer-Runner is a project designed to run the Helix Bridge Relayer (http
 
 ## Configuration
 
-Helix-Relayer-Runner uses environment variables for configuration. Here are the details:
+gbox uses environment variables for configuration. Here are the details:
 
 ### Runner Configuration
 
@@ -26,7 +26,7 @@ Helix-Relayer-Runner uses environment variables for configuration. Here are the 
 
 ## Running
 
-Run Helix-Relayer-Runner with the following Docker command:
+Run gbox with the following Docker command:
 ```Bash
 docker run -dt --restart=always --name=helix-relayer \
     -e SERVER_ADDR=:8080 \
